@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Web.Mvc;
@@ -14,6 +15,8 @@ namespace VeraDemoNet.Controllers
     public class BlabController : AuthControllerBase
     {
         protected readonly log4net.ILog logger;
+
+        private static Type[] _allowedBlabberCommands = { typeof(ListenCommand), typeof(IgnoreCommand) };
 
         private string sqlBlabsByMe = 
             "SELECT b.content, b.timestamp, COUNT(c.blabid), b.blabid "  +
@@ -303,6 +306,10 @@ namespace VeraDemoNet.Controllers
                     dbContext.Database.Connection.Open();
 
                     var commandType = Type.GetType("VeraDemoNet.Commands." + UpperCaseFirst(command) + "Command");
+                    if (!_allowedBlabberCommands.Contains(commandType))
+                    {
+                        throw new ArgumentException($"Forbidden command \"{command}\"");
+                    }
 
                     /* START BAD CODE */
                     var cmdObj = (IBlabberCommand) Activator.CreateInstance(commandType, dbContext.Database.Connection, username);

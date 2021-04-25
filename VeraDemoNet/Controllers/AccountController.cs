@@ -127,14 +127,12 @@ namespace VeraDemoNet.Controllers
                         }
                     }
 
-                    if (string.IsNullOrEmpty(ReturnUrl))
+                    if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
                     {
-                        return RedirectToAction("Feed", "Blab");
+                        return Redirect(ReturnUrl);
                     }
 
-                    /* START BAD CODE */
-                    return Redirect(ReturnUrl);
-                    /* END BAD CODE */
+                    return RedirectToAction("Feed", "Blab");
                 }
             }
             catch (Exception ex)

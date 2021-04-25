@@ -46,12 +46,14 @@ namespace VeraDemoNet.Commands
             
             /* START BAD CODE */
             var listeningEvent = username + " started listening to " + blabberUsername + "(" + blabberName + ")";
-            var eventQuery = "INSERT INTO users_history (blabber, event) VALUES ('" + username + "', '" + listeningEvent + "')";
+            var eventQuery = "INSERT INTO users_history (blabber, event) VALUES (@username, @listeningEvent)";
 
             using (var sqlStatement = connect.CreateCommand())
             {
                 logger.Info(eventQuery);
                 sqlStatement.CommandText = eventQuery;
+                sqlStatement.Parameters.Add(new SqlParameter("@username", username));
+                sqlStatement.Parameters.Add(new SqlParameter("@listeningEvent", listeningEvent));
                 sqlStatement.ExecuteNonQuery();
             }
 

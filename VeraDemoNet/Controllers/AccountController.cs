@@ -383,12 +383,13 @@ namespace VeraDemoNet.Controllers
 
         private void PopulateProfileViewModel(DbConnection connect, string username, ProfileViewModel viewModel)
         {
-            string sqlMyProfile = "SELECT username, real_name, blab_name, is_admin FROM users WHERE username = '" + username + "'";
+            string sqlMyProfile = "SELECT username, real_name, blab_name, is_admin FROM users WHERE username = @username";
             logger.Info(sqlMyProfile);
 
             using (var eventsCommand = connect.CreateCommand())
             {
                 eventsCommand.CommandText = sqlMyProfile;
+                eventsCommand.Parameters.Add(new SqlParameter("@username", username));
                 using (var userProfile = eventsCommand.ExecuteReader())
                 {
                     if (userProfile.Read())
@@ -472,14 +473,14 @@ namespace VeraDemoNet.Controllers
         private List<string> RetrieveMyEvents(DbConnection connect, string username)
         {
             // START BAD CODE
-            var sqlMyEvents = "select event from users_history where blabber='" + 
-                              username + "' ORDER BY eventid DESC; ";
+            var sqlMyEvents = "select event from users_history where blabber=@username ORDER BY eventid DESC; ";
             logger.Info(sqlMyEvents);
             
             var myEvents = new List<string>();
             using (var eventsCommand = connect.CreateCommand())
             {
                 eventsCommand.CommandText = sqlMyEvents;
+                eventsCommand.Parameters.Add(new SqlParameter("@username", username));
                 using (var userHistoryResult = eventsCommand.ExecuteReader())
                 {
                     while (userHistoryResult.Read())

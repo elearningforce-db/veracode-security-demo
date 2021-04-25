@@ -36,7 +36,7 @@ namespace VeraDemoNet.Controllers
         [HttpGet, ActionName("Login")]
         public ActionResult GetLogin(string ReturnUrl = "")
         {
-            logger.Info("Login page visited: " + ReturnUrl);
+            logger.Info("Login page visited");
 
             if (IsUserLoggedIn())
             {
@@ -90,7 +90,7 @@ namespace VeraDemoNet.Controllers
                     using (EventLog eventLog = new EventLog("Application"))
                     {
                         eventLog.Source = "Application";
-                        eventLog.WriteEntry("Entering PostLogin with target " + ReturnUrl + " and username " + loginViewModel.UserName, EventLogEntryType.Information, 101, 1);
+                        eventLog.WriteEntry("Entering PostLogin with username " + loginViewModel.UserName, EventLogEntryType.Information, 101, 1);
                     }
 
                     if (userDetails == null)

@@ -9,6 +9,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using System.Web;
 using System.Web.Hosting;
 using System.Web.Mvc;
@@ -54,22 +55,13 @@ namespace VeraDemoNet.Controllers
 
             logger.Info("User details were remembered");
             var unencodedUserDetails = Convert.FromBase64String(userDetailsCookie.Value);
-
-            CustomSerializeModel deserializedUser;
-
-            using (MemoryStream memoryStream = new MemoryStream(unencodedUserDetails))
-            {
-                var binaryFormatter = new BinaryFormatter();
-
-                // set memory stream position to starting point
-                memoryStream.Position = 0;
-
-                // Deserializes a stream into an object graph and return as a object.
-                /* START BAD CODE */
-                deserializedUser = binaryFormatter.Deserialize(memoryStream) as CustomSerializeModel;
-                /* END BAD CODE */
-                logger.Info("User details were retrieved for user: " + deserializedUser.UserName);
-            }
+            
+            // Deserializes a stream into an object graph and return as a object.
+            /* START BAD CODE */
+            var deserializedUser = JsonConvert.DeserializeObject<CustomSerializeModel>(Encoding.UTF8.GetString(unencodedUserDetails));
+            /* END BAD CODE */
+            logger.Info("User details were retrieved for user: " + deserializedUser.UserName);
+            
 
             Session["username"] = deserializedUser.UserName;
 
@@ -113,18 +105,15 @@ namespace VeraDemoNet.Controllers
                             BlabName = userDetails.BlabName,
                             RealName = userDetails.RealName
                         };
+                        
+                        var json = JsonConvert.SerializeObject(userModel);
+                        var faCookie =
+                            new HttpCookie(COOKIE_NAME, Convert.ToBase64String(Encoding.UTF8.GetBytes(json)))
+                            {
+                                Expires = DateTime.Now.AddDays(30)
+                            };
+                        Response.Cookies.Add(faCookie);
 
-                        using (var userModelStream = new MemoryStream())
-                        {
-                            IFormatter formatter = new BinaryFormatter();
-                            formatter.Serialize(userModelStream, userModel);
-                            var faCookie =
-                                new HttpCookie(COOKIE_NAME, Convert.ToBase64String(userModelStream.GetBuffer()))
-                                {
-                                    Expires = DateTime.Now.AddDays(30)
-                                };
-                            Response.Cookies.Add(faCookie);
-                        }
                     }
 
                     if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
@@ -553,6 +542,7 @@ namespace VeraDemoNet.Controllers
                 Password = Md5Hash(model.Password),
                 CreatedAt = DateTime.Now
             };
+
 
             using (var dbContext = new BlabberDB())
             {

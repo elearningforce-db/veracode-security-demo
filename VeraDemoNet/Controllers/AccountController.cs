@@ -6,12 +6,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Web;
 using System.Web.Hosting;
+using System.Web.Http.Results;
 using System.Web.Mvc;
 using Newtonsoft.Json;
 using VeraDemoNet.DataAccess;
@@ -238,6 +240,17 @@ namespace VeraDemoNet.Controllers
             // Update user profile image
             if (file != null &&  file.ContentLength > 0) 
             {
+                var extension = Path.GetExtension(file.FileName).ToLower();
+                if (extension != ".png")
+                {
+                    Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    return new JsonResult
+                    {
+                        Data = JsonConvert.DeserializeObject(
+                            "{\"message\": \"<script>alert('Unsupported image format');</script>\"}")
+                    };
+                }
+
                 // Get old image name, if any, to delete
                 var oldImage = imageDir + userName + ".png";
                 
@@ -245,8 +258,7 @@ namespace VeraDemoNet.Controllers
                 {
                     System.IO.File.Delete(oldImage);
                 }
-		
-                var extension = Path.GetExtension(file.FileName).ToLower();
+
                 var newFilename = Path.Combine(imageDir, userName);
                 newFilename += extension;
 
@@ -402,6 +414,11 @@ namespace VeraDemoNet.Controllers
 	        {
 	            return RedirectToLogin(HttpContext.Request.RawUrl);
 	        }
+
+            if (string.IsNullOrEmpty(image) || image.Contains("..") || !image.EndsWith(".png"))
+            {
+                return Content("Image parameter is incorrect");
+            }
 
             var imagePath = Path.Combine(HostingEnvironment.MapPath("~/Images/"), image); 
 

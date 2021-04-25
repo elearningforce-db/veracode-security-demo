@@ -535,24 +535,25 @@ namespace VeraDemoNet.Controllers
         }
 
         [HttpPost, ActionName("RegisterFinish")]
-        public ActionResult PostRegisterFinish(User user, string cpassword)
+        public ActionResult PostRegisterFinish(RegisterViewModel model)
         {
-            if (user.Password != cpassword)
+            if (model.Password != model.CPassword)
             {
                 logger.Info("Password and Confirm Password do not match");
-                return View(new RegisterViewModel
-                {
-                    Error = "The Password and Confirm Password values do not match. Please try again.",
-                    UserName = user.UserName,
-                    RealName = user.RealName,
-                    BlabName = user.BlabName,
-                });
+                model.Error = "The Password and Confirm Password values do not match. Please try again.";
+                return View(model);
             }
 
             // Use the user class to get the hashed password.
-            user.Password = Md5Hash(user.Password);
-            user.CreatedAt = DateTime.Now;
-            
+            var user = new User
+            {
+                BlabName = model.BlabName,
+                RealName = model.RealName,
+                UserName = model.UserName,
+                Password = Md5Hash(model.Password),
+                CreatedAt = DateTime.Now
+            };
+
             using (var dbContext = new BlabberDB())
             {
                 dbContext.Users.Add(user);

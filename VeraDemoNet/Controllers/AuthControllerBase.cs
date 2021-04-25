@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Web;
 using System.Web.Mvc;
 using VeraDemoNet.DataAccess;
 
@@ -41,7 +42,7 @@ namespace VeraDemoNet.Controllers
 
         protected void LogoutUser()
         {
-            Session["username"] = null;
+            Response.Cookies.Add(new HttpCookie("ASP.NET_SessionId", ""));
         }
 
         protected bool IsUserLoggedIn()

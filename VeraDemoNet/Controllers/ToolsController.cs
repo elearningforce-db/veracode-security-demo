@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Web.Hosting;
@@ -11,6 +12,7 @@ namespace VeraDemoNet.Controllers
     public class ToolsController : AuthControllerBase
     {
         protected readonly log4net.ILog logger;
+        private static string[] _allowedFortuneFiles = {"funny.txt", "offensive.txt"};
 
         public ToolsController()
         {
@@ -54,6 +56,10 @@ namespace VeraDemoNet.Controllers
             var output = new StringBuilder();
             try
             {
+                if (!Uri.IsWellFormedUriString(host.Trim(), UriKind.RelativeOrAbsolute))
+                {
+                    throw new ArgumentException("Host parameter is not a valid Uri string");
+                }
                 // START BAD CODE
                 var fileName = "cmd.exe";
                 var arguments = "/c ping " + host;
@@ -88,6 +94,11 @@ namespace VeraDemoNet.Controllers
 
             try
             {
+                if (!_allowedFortuneFiles.Any(x => x.Equals(fortuneFile, StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    throw new ArgumentException($"Fortune file \"{fortuneFile}\" is not supported");
+                }
+
                 // START BAD CODE
                 var fileName = "cmd.exe";
                 var arguments = "/c " + HostingEnvironment.MapPath("~/Resources/bin/fortune-go.exe") + " " + HostingEnvironment.MapPath("~/Resources/bin/" + fortuneFile);

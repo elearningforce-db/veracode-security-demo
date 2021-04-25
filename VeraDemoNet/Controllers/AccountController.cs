@@ -539,7 +539,7 @@ namespace VeraDemoNet.Controllers
                 BlabName = model.BlabName,
                 RealName = model.RealName,
                 UserName = model.UserName,
-                Password = Md5Hash(model.Password),
+                Password = Sha256Hash(model.Password),
                 CreatedAt = DateTime.Now
             };
 

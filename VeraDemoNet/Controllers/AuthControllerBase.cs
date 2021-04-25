@@ -21,7 +21,7 @@ namespace VeraDemoNet.Controllers
                 var found = dbContext.Database.SqlQuery<BasicUser>(
                     "select username, real_name as realname, blab_name as blabname, is_admin as isadmin from users where username = @username and password=@password;",
                     new SqlParameter("@username", userName),
-                    new SqlParameter("@password", Md5Hash(passWord)))
+                    new SqlParameter("@password", Sha256Hash(passWord)))
                     .ToList();
 
                 if (found.Count != 0)
@@ -81,6 +81,24 @@ namespace VeraDemoNet.Controllers
             }
 
             return sb.ToString();
+        }
+
+        protected static string Sha256Hash(string input)
+        {
+            // Create a SHA256   
+            using (SHA256 sha256Hash = SHA256.Create())
+            {
+                // ComputeHash - returns byte array  
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+                // Convert byte array to a string   
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    builder.Append(bytes[i].ToString("x2"));
+                }
+                return builder.ToString();
+            }
         }
     }
 }
